@@ -68,6 +68,7 @@ npm run dev
 | 分析快照 | `geo_snapshot` | 版本快照 | 快照编号、分析口径、网格层级 |
 | 历史回补 | `geo_backfill` | 回补任务 | 回补编号、目标数据集、起始日期 |
 | 结果导出 | `geo_export` | 导出任务 | 导出编号、快照编号、导出格式 |
+| 区域授权交付 | `region_delivery` | 区域交付任务 | 交付编号、合作方编号、授权子区、匿名行数、窗口范围 |
 
 ## 约定
 
@@ -76,6 +77,25 @@ npm run dev
   `frontend/src/domain/<模块>.ts`，用于承载真实业务差异并维持36题位容量。
 - 列表接口统一返回 `{ items, total, page, size }`，动作接口统一返回 `{ ok, message }`。
 - 状态流转只允许在 `app/services` 里改，路由层不做业务判断。
+
+## 区域授权交付（`region_delivery`）
+
+面向区域合作方的匿名统计交付，核心规则与接口（前缀 `/api/region-delivery`）：
+
+- **逐点子区裁切**：`POST /subzones` 登记子区多边形，`POST /batch-points` 按点的
+  原始位置逐点判定归属并生成网格×子区贡献统计；`GET /cross-boundary-contribution/{batch_key}`
+  在交付前核对每个跨界格实际贡献的子区与点数，校验合计与网格总量一致。
+- **授权时点台账**：`/authorizations/grant|revoke` 对授权追加/收窄留痕，有效授权按
+  每个子区最近一条生效记录计算；请求登记时快照当时授权，发包时按**发送时刻**授权裁切。
+- **匿名交付包**：`POST /requests` 登记请求，`POST /requests/{id}/deliver` 发包。
+  外发行只含网格、子区与匿名点数；终端标识、点位编号、坐标、时间戳等可还原单条轨迹的
+  字段由白名单清洗剔除，`GET /requests/{id}/anonymity-check` 递归自检。
+- **边界说明**：未授权子区、跨界格被截留贡献、整格出界只产生 `boundary_notes`，
+  不出数据；内部复核副本（`/requests/{id}/internal-review`）保留完整子区贡献。
+- **审校边界**：`POST /requests/{id}/review` 下审校员仅能看到自身授权子区的共享观测
+  归属；越权查看其他区域或请求整格明细（`full_grid=true`）时返回零行加边界说明。
+- **可领/重领范围**：`/claimable-scope` 与 `/reclaimable-scope` 始终以当前有效授权
+  为准；被收窄子区的历史交付留存内部复核，但不再支持新下载或重领。
 
 领域：数据工程
 子方向：数据分析与数据应用

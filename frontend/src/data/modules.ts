@@ -200,6 +200,17 @@ export const MODULES: ModuleMeta[] = [
     actionTargets: {"启动导出": "导出中", "确认交付": "已交付", "标记失败": "已交付"},
     metrics: ["导出任务总数", "待导出任务", "已交付任务"],
   },
+  {
+    key: "region_delivery",
+    name: "区域授权交付",
+    entity: "区域交付任务",
+    desc: "按合作方授权子区裁切网格匿名统计，跨界格逐点核对贡献，留边界说明并保留内部复核副本。",
+    fields: ["交付编号", "合作方编号", "请求编号", "授权子区", "网格数量", "匿名行数", "窗口范围", "交付水位"],
+    statuses: ["草稿", "待授权", "已授权", "已交付"],
+    actions: ["提交授权", "确认授权", "确认交付"],
+    actionTargets: {"提交授权": "待授权", "确认授权": "已授权", "确认交付": "已交付"},
+    metrics: ["交付任务总数", "待授权任务", "已交付任务"],
+  },
 ]
 
 export const MODULE_BY_KEY: Map<string, ModuleMeta> = new Map(
